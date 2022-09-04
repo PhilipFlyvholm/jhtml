@@ -1,7 +1,6 @@
 [
     {
-        "tag": "head",
-        "children": [
+        "head": [
             {
                 "tag": "style",
                 "body": {
@@ -18,6 +17,12 @@
                     "border-radius": "0.5em",
                     "box-shadow": "2px 3px 7px 2px rgba(0,0,0,0.02)"
                 },
+                ".bold": {
+                    "font-weight": "bold"
+                },
+                ".italic": {
+                    "font-style": "italic"
+                },
                 "a:link, a:visited": {
                     "color": "#38488f",
                     "text-decoration": "none"
@@ -30,8 +35,7 @@
                 }
             },
             {
-                "tag": "title",
-                "raw": "Hello mate"
+                "title": "Hello mate"
             },
             {
                 "tag": "meta",
@@ -46,29 +50,42 @@
                 "tag": "meta",
                 "http-equiv": "Condtent-type",
                 "content": "text/html; charset=utf-8"
+            },
+            {
+                "tag": "link",
+                "rel": "stylesheet",
+                "href": "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
+            },
+            {
+                "tag": "script",
+                "src": "https://cdn.tailwindcss.com"
             }
         ]
     },
     {
-        "tag": "body",
-        "children": [
+        "body": [
             {
-                "tag": "div",
-                "children": [
+                "div": [
                     {
-                        "tag": "h1",
-                        "raw": "Example Domain"
+                        "h1": "Example Domain",
+                        "class": "text-3xl"
                     },
                     {
-                        "tag": "p",
-                        "raw": "This domain is established to be used for illustrative examples in documents. You may use this domain in examples without prior coordination or asking for permission."
+                        "p": "This domain is established to be used for illustrative examples in documents. You may use this domain in examples without prior coordination or asking for permission.",
+                        "class": [
+                            "bold",
+                            "italic"
+                        ]
                     },
                     {
-                        "tag": "p",
-                        "raw": "More information..."
+                        "p": "More information..."
                     }
                 ]
+            },
+            {
+                "tag": "br"
             }
-        ]
+        ],
+        "class": "body2"
     }
 ]

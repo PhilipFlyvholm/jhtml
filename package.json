@@ -4,8 +4,13 @@
   "description": "Converts a json format to a HTML webpage",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example": "node index.js"
   },
   "author": "Philip Flyvholm",
-  "license": "GNU GPLv3"
+  "license": "GNU GPLv3",
+  "dependencies": {
+    "js-beautify": "^1.14.6",
+    "yargs": "^17.5.1"
+  }
 }

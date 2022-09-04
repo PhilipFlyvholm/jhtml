@@ -7,22 +7,21 @@ Create a html website with the use of JSON instead of the XML format.
 ## How to use
 Start by creating a json file and with an empty array. This is the equlivant of a empty html file with only the html tag.
 
-Each tag is represented by a two curly brackets and must have an "tag" name/value pair.
-If we want to add children to the tag then we add the "children" name/value pair. This tag must have an array of tags as the value.
-Giving a "raw" name/value pair will set the raw content in the tag.
-Using any other name in a tag will create an attribute.
+Each tag is represented by a two curly brackets. In its simplest form can a tag represented by a key-value pair where the key is the tag and the value is the either the raw content or a list of children.
+Alternativly can a "tag" key-value pair be giving to set the tag and a "children" key-value pair to give the children. This tag must have an array of tags as the value. If the tag does not need children but raw content then the "raw" key-value pair can be used.
+
+Giving a "raw" key-value pair will set the raw content in the tag.
+Using any other key in a tag will create an attribute.
 ```json
 [
 	{
 		"tag": "head",
 		"children": [
 			{
-				"tag": "title",
-				"raw": "This is the title."
+				"title": "This is the title."
 			},
 			{
-				"tag": "meta",
-                "charset": "utf-8"
+				"meta": "utf-8"
 			}
 		]
 	},
@@ -37,12 +36,13 @@ Using any other name in a tag will create an attribute.
 	}
 ]
 ```
+See the examples folder for up-to-date examples
 
 ## Todo:
-- Shorthand for inline tags ({"h1": "Hello world!)
 - Inline styling for tags
 - Script tag support
-- Extern stylesheet tag
 - Auto stylesheet creation
 - Remove hardcoded file name
 - Add --watch for auto compile
+- File-based router
+- Import/Component system (maybe use webcomponents?)
