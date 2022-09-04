@@ -40,9 +40,9 @@ See the examples folder for up-to-date examples
 
 ## Todo:
 - Inline styling for tags
-- Script tag support
 - Auto stylesheet creation
 - Remove hardcoded file name
 - Add --watch for auto compile
 - File-based router
 - Import/Component system (maybe use webcomponents?)
+- Better error system

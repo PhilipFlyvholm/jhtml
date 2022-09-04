@@ -4,7 +4,7 @@ const fs = require('fs');
 const beautify = require('js-beautify').html;
 const isEmptyTag = require('./utils/emptyTags').isEmptyTag;
 const reservedKeywords = ["tag", "children", "raw"];
-
+const components = {};
 const readJsonFile = (path) =>
     new Promise((resolve, reject) =>
         fs.readFile(path, function (err, data) {
@@ -14,9 +14,47 @@ const readJsonFile = (path) =>
             resolve(JSON.parse(data));
         }));
 
-const parseJsonToHtml = (json) => {
-    const html = parseChildren(json);
-    return `<!doctype html><html>${html}</html>`;
+const parseJsonToHtml = async (json, currentPath) => {
+    if (Array.isArray(json)) {
+        const html = parseChildren(json);
+        return `${html}`;
+    }
+    if (!json.page && !Array.isArray(json.page) && !json.component) {
+        console.log("Invalid json file - missing/invalid page or component");
+        return;
+    }
+    if (json.import) {
+        for (let componentRef of Object.keys(json.import)) {
+            if (components[componentRef]) {
+                console.log(`Component ${componentRef} already exists`);
+                return;
+            }
+            const componentPath = json.import[componentRef];
+            if (typeof componentPath !== "string") {
+                console.log("Invalid import path:", componentPath);
+                return `<p>Invalid import path ${componentPath}</p>`;
+            }
+            const folder = currentPath.substring(0, currentPath.lastIndexOf("/"));
+            const relativePath = `${folder}/${componentPath}`;
+            if (!fs.existsSync(relativePath)) {
+                console.log("Invalid import path:", relativePath);
+                return `<p>Invalid import path ${relativePath}</p>`;
+            }
+            console.log(relativePath);
+            const component = await readJsonFile(relativePath);
+            components[componentRef] = await parseJsonToHtml(component, relativePath);
+        }
+    }
+
+    if (json.page) {
+        const html = parseChildren(json.page);
+        return `<!doctype html><html>${html}</html>`;
+    }
+    if (json.component) {
+        const html = parseChildren(json.component);
+        return html;
+    }
+
 }
 
 const parseAttributes = (json, ignoreKeys = []) => {
@@ -72,6 +110,7 @@ const parseTag = (json) => {
     if (!json || json.lenght === 0) return "";
     if (!json.tag) return parseShorthandTag(json);
     let htmlTag = json["tag"];
+    if (components[htmlTag]) return components[htmlTag];
     if (htmlTag === "style") {
         return `<style type="text/css">${parseStyle(json)}</style>`;
     } else {
@@ -97,7 +136,7 @@ const main = async (argv) => {
         return;
     }
     const json = await readJsonFile(argv.filePath);
-    const html = argv.minify ? parseJsonToHtml(json) : beautify(parseJsonToHtml(json));
+    const html = argv.minify ? await parseJsonToHtml(json, argv.filePath) : beautify(await parseJsonToHtml(json, argv.filePath));
     const output = argv.filePath.replace(".json", ".html");
     toHTMLFile(html, output);
 }
@@ -113,7 +152,7 @@ yargs.scriptName("jhtml")
         })
         yargs.positional('minify', {
             type: 'boolean',
-            default: false,
+            default: true,
             describe: 'Minify the html'
         })
     }, function (argv) {
