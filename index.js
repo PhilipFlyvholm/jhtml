@@ -1,5 +1,4 @@
 const yargs = require('yargs');
-
 const fs = require('fs');
 const beautify = require('js-beautify').html;
 const isEmptyTag = require('./utils/emptyTags').isEmptyTag;
@@ -14,6 +13,29 @@ const readJsonFile = (path) =>
             resolve(JSON.parse(data));
         }));
 
+const loadComponent = async (componentRef, componentPath, currentPath) => {
+    if (components[componentRef]) {
+        console.log(`Component ${componentRef} already exists`);
+        return;
+    }
+    if (typeof componentPath !== "string") {
+        console.log("Invalid import path:", componentPath);
+        return `<p>Invalid import path ${componentPath}</p>`;
+    }
+    const folder = currentPath.substring(0, currentPath.lastIndexOf("/"));
+    const relativePath = `${folder}/${componentPath}`;
+    if (!fs.existsSync(relativePath)) {
+        console.log("Invalid import path:", relativePath);
+        return `<p>Invalid import path ${relativePath}</p>`;
+    }
+    console.log(relativePath);
+    const component = await readJsonFile(relativePath);
+    let props = component.props ?? {};
+    components[componentRef] = {
+        props: props,
+        html: await parseJsonToHtml(component, relativePath)
+    };
+}
 const parseJsonToHtml = async (json, currentPath) => {
     if (Array.isArray(json)) {
         const html = parseChildren(json);
@@ -25,27 +47,9 @@ const parseJsonToHtml = async (json, currentPath) => {
     }
     if (json.import) {
         for (let componentRef of Object.keys(json.import)) {
-            if (components[componentRef]) {
-                console.log(`Component ${componentRef} already exists`);
-                return;
-            }
-            const componentPath = json.import[componentRef];
-            if (typeof componentPath !== "string") {
-                console.log("Invalid import path:", componentPath);
-                return `<p>Invalid import path ${componentPath}</p>`;
-            }
-            const folder = currentPath.substring(0, currentPath.lastIndexOf("/"));
-            const relativePath = `${folder}/${componentPath}`;
-            if (!fs.existsSync(relativePath)) {
-                console.log("Invalid import path:", relativePath);
-                return `<p>Invalid import path ${relativePath}</p>`;
-            }
-            console.log(relativePath);
-            const component = await readJsonFile(relativePath);
-            components[componentRef] = await parseJsonToHtml(component, relativePath);
+            await loadComponent(componentRef, json.import[componentRef], currentPath);
         }
     }
-
     if (json.page) {
         const html = parseChildren(json.page);
         return `<!doctype html><html>${html}</html>`;
@@ -110,7 +114,26 @@ const parseTag = (json) => {
     if (!json || json.lenght === 0) return "";
     if (!json.tag) return parseShorthandTag(json);
     let htmlTag = json["tag"];
-    if (components[htmlTag]) return components[htmlTag];
+    if (components[htmlTag]) {
+        let component = components[htmlTag];
+        let html = component.html;
+        let props = component.props;
+        Object.keys(props).forEach(function (prop) {
+            if (reservedKeywords.includes(prop)) return;
+            let value = json[prop] ?? props[prop];
+            let regex = new RegExp('\\${' + prop + '}', "gm");
+            html = html.replaceAll(regex, value);
+        });
+
+        Object.keys(json).forEach(function (key) {
+            if (reservedKeywords.includes(key)) return;
+            if (!component.props[key]) {
+                console.log("Unknown prop", key);
+                return;
+            }
+        });
+        return html;
+    }
     if (htmlTag === "style") {
         return `<style type="text/css">${parseStyle(json)}</style>`;
     } else {

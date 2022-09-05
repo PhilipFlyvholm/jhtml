@@ -1,6 +1,7 @@
 {
     "import": {
-        "text": "components/text.json"
+        "text": "components/text.json",
+        "advancedText": "components/advanced-text.json"
     },
     "page": [
         {
@@ -92,6 +93,11 @@
                 },
                 {
                     "tag": "br"
+                },
+                {
+                    "tag": "advancedText",
+                    "hello": "world",
+                    "name": "Philip!"
                 }
             ],
             "class": "body2"

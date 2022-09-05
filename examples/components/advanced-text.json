@@ -1,0 +1,10 @@
+{
+    "props": {
+        "name": "World"
+    },
+    "component": [
+        {
+            "p": "Hello ${name}"
+        }
+    ]
+}
