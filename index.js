@@ -100,6 +100,25 @@ const parseStyle = (json) => {
 
 const parseTag = (json) => {
     if (!json || json.lenght === 0) return "";
+    const type = typeof json;
+    if (type !== "object") {
+        if (type !== "string") {
+            console.log("Invalid data type:", type);
+            return;
+        }
+        if (!components[json]) return isEmptyTag(json) ? `<${json}/>` : `<${json}></${json}>`;
+
+        let component = components[json];
+        let html = component.html;
+        let props = component.props;
+        Object.keys(props).forEach(function (prop) {
+            if (reservedKeywords.includes(prop)) return;
+            let value = props[prop];
+            let regex = new RegExp('\\${' + prop + '}', "gm");
+            html = html.replaceAll(regex, value);
+        });
+        return html;
+    }
     const isShortHand = !json.tag;
     const htmlTag = isShortHand ? Object.keys(json)[0] : json["tag"];
     if (htmlTag === "style") {
@@ -143,10 +162,15 @@ const toHTMLFile = (json, path) => {
 }
 const parse = async (argv) => {
     components = {};
-    const json = await readJsonFile(argv.filePath);
-    const html = argv.minify ? await parseJsonToHtml(json, argv.filePath) : beautify(await parseJsonToHtml(json, argv.filePath));
-    const output = argv.filePath.replace(".json", ".html");
-    toHTMLFile(html, output);
+    const path = argv.filePath;
+    const json = await readJsonFile(path);
+    const html = argv.minify ? await parseJsonToHtml(json, path) : beautify(await parseJsonToHtml(json, path));
+    const buildPath = path.substring(0, path.lastIndexOf("/")) + "/build";
+    if (!fs.existsSync(buildPath)){
+        fs.mkdirSync(buildPath);
+    }
+    const outputFile = buildPath + path.substring(path.lastIndexOf("/")).replace(".json",".html");
+    toHTMLFile(html, outputFile);
 }
 const main = async (argv) => {
     if (!fs.existsSync(argv.filePath)) {
@@ -154,10 +178,14 @@ const main = async (argv) => {
         return;
     }
     await parse(argv);
-    if(argv.watch) fs.watchFile(argv.filePath, async () => {
+    if (argv.watch) fs.watchFile(argv.filePath, async () => {
         console.log("Reparsing...");
-        await parse(argv);
-      });
+        try {
+            await parse(argv);
+        } catch (e) {
+            console.log(e);
+        }
+    });
 }
 
 
@@ -174,7 +202,7 @@ yargs.scriptName("jhtml")
             default: true,
             describe: 'Minify the html'
         })
-        yargs.positional('watch',{
+        yargs.positional('watch', {
             type: 'boolean',
             default: false,
             describe: "Watch for updates in the file and auto parse"

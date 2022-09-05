@@ -45,6 +45,5 @@ See the examples folder for up-to-date examples
 - Reactive components/pages
 - For loops
 - Watch function should work for directory instead of the main file
-- Output should be in a build folder by default
 - Dev web server with auto reload
 - Maybe change components to be webcomponents
