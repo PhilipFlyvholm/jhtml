@@ -39,10 +39,12 @@ Using any other key in a tag will create an attribute.
 See the examples folder for up-to-date examples
 
 ## Todo:
-- Inline styling for tags
 - Auto stylesheet creation
-- Remove hardcoded file name
-- Add --watch for auto compile
 - File-based router
-- Import/Component system (maybe use webcomponents?)
 - Better error system
+- Reactive components/pages
+- For loops
+- Watch function should work for directory instead of the main file
+- Output should be in a build folder by default
+- Dev web server with auto reload
+- Maybe change components to be webcomponents

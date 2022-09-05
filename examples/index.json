@@ -15,9 +15,9 @@
                         "padding": 0,
                         "font-family": "-apple-system, system-ui, BlinkMacSystemFont, Helvetica, Arial, sans-serif"
                     },
-                    "div": {
+                    "div.box": {
                         "width": "600px",
-                        "margin": "5em auto",
+                        "margin": "2em auto",
                         "padding": "2em",
                         "background-color": "#fdfdff",
                         "border-radius": "0.5em",
@@ -73,39 +73,44 @@
                 {
                     "div": [
                         {
-                            "h1": "Example Domain",
-                            "class": "text-3xl",
-                            "style": "margin-top: 100px;"
+                            "h1": "Project example",
+                            "class": "text-3xl"
                         },
                         {
-                            "p": "This domain is established to be used for illustrative examples in documents. You may use this domain in examples without prior coordination or asking for permission.",
+                            "p": "This webpage is created using json and is converted into HTML",
                             "class": [
                                 "bold",
                                 "italic"
                             ]
                         },
                         {
-                            "p": "More information..."
+                            "p": "This is more information..."
+                        },
+                        {
+                            "tag": "br"
                         },
                         {
                             "tag": "text"
                         }
-                    ]
+                    ],
+                    "class": ["box"] 
                 },
                 {
-                    "tag": "br"
-                },
-                {
-                    "tag": "center",
-                    "children": [
+                    "center": [
                         {
                             "tag": "advancedText",
-                            "name": "Philip!"
+                            "name": "this is another component within a component with props"
+                        },
+                        {
+                            "tag": "br"
+                        },
+                        {
+                            "p": "Bing bong!"
                         }
                     ]
                 }
             ],
-            "class": "body2"
+            "class": "body"
         }
     ]
 }

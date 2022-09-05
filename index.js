@@ -3,7 +3,7 @@ const fs = require('fs');
 const beautify = require('js-beautify').html;
 const isEmptyTag = require('./utils/emptyTags').isEmptyTag;
 const reservedKeywords = ["tag", "children", "raw"];
-const components = {};
+let components = {};
 const readJsonFile = (path) =>
     new Promise((resolve, reject) =>
         fs.readFile(path, function (err, data) {
@@ -98,17 +98,6 @@ const parseStyle = (json) => {
     return css;
 }
 
-const parseShorthandTag = (json) => {
-    let htmlTag = Object.keys(json)[0];
-    let htmlAttributes = parseAttributes(json, [htmlTag]);
-    let value = json[htmlTag];
-    if (value === null) return isEmptyTag(htmlTag) ? `<${htmlTag}${htmlAttributes}/>` : `<${htmlTag}${htmlAttributes}></${htmlTag}>`;
-    if (Array.isArray(value)) {
-        return `<${htmlTag}${htmlAttributes}>${parseChildren(value)}</${htmlTag}>`;
-    }
-    return `<${htmlTag}${htmlAttributes}>${value}</${htmlTag}>`;
-}
-
 const parseTag = (json) => {
     if (!json || json.lenght === 0) return "";
     const isShortHand = !json.tag;
@@ -116,6 +105,8 @@ const parseTag = (json) => {
     if (htmlTag === "style") {
         return `<style type="text/css">${parseStyle(json)}</style>`;
     } else {
+        const childrenJson = isShortHand ? json[htmlTag] : json.children;
+        const htmlChildren = !childrenJson ? null : (typeof childrenJson === "object" || Array.isArray(childrenJson)) ? parseChildren(childrenJson) : childrenJson;
         if (components[htmlTag]) {
             let component = components[htmlTag];
             let html = component.html;
@@ -126,13 +117,12 @@ const parseTag = (json) => {
                 let regex = new RegExp('\\${' + prop + '}', "gm");
                 html = html.replaceAll(regex, value);
             });
-            if (json.children) {
-                let htmlChildren = parseChildren(json.children);
+            if (htmlChildren) {
                 let childRegex = new RegExp('\\${children}', "m");
                 html = html.replace(childRegex, htmlChildren);
             }
             Object.keys(json).forEach(function (key) {
-                if (reservedKeywords.includes(key)) return;
+                if (reservedKeywords.includes(key) || key == htmlTag) return;
                 if (!component.props[key]) {
                     console.log("Unknown prop", key);
                     return;
@@ -140,11 +130,7 @@ const parseTag = (json) => {
             });
             return html;
         }
-        let htmlAttributes = parseAttributes(json);
-        let htmlChildren =
-            json["children"] ?
-                parseChildren(json["children"])
-                : json["raw"] ? json["raw"] : null;
+        let htmlAttributes = parseAttributes(json, isShortHand ? [htmlTag] : []);
         return htmlChildren ? `<${htmlTag}${htmlAttributes}>${htmlChildren}</${htmlTag}>` : isEmptyTag(htmlTag) ? `<${htmlTag}${htmlAttributes} />` : `<${htmlTag}${htmlAttributes}></${htmlTag}>`;
     }
 }
@@ -155,22 +141,29 @@ const toHTMLFile = (json, path) => {
         console.log(`Saved build to ${path}!`);
     });
 }
-
-const main = async (argv) => {
-    if (!fs.existsSync(argv.filePath)) {
-        console.log("Invalid file path");
-        return;
-    }
+const parse = async (argv) => {
+    components = {};
     const json = await readJsonFile(argv.filePath);
     const html = argv.minify ? await parseJsonToHtml(json, argv.filePath) : beautify(await parseJsonToHtml(json, argv.filePath));
     const output = argv.filePath.replace(".json", ".html");
     toHTMLFile(html, output);
 }
+const main = async (argv) => {
+    if (!fs.existsSync(argv.filePath)) {
+        console.log("Invalid file path");
+        return;
+    }
+    await parse(argv);
+    if(argv.watch) fs.watchFile(argv.filePath, async () => {
+        console.log("Reparsing...");
+        await parse(argv);
+      });
+}
 
 
 yargs.scriptName("jhtml")
     .usage('$0 <command> [options]')
-    .command('parse [filePath] [minify]', 'Parse a json file to html', (yargs) => {
+    .command('parse [filePath] [minify] [watch]', 'Parse a json file to html', (yargs) => {
         yargs.positional('filePath', {
             type: 'string',
             default: 'index.json',
@@ -180,6 +173,11 @@ yargs.scriptName("jhtml")
             type: 'boolean',
             default: true,
             describe: 'Minify the html'
+        })
+        yargs.positional('watch',{
+            type: 'boolean',
+            default: false,
+            describe: "Watch for updates in the file and auto parse"
         })
     }, function (argv) {
         main(argv);

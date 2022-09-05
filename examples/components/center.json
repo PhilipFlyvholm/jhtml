@@ -4,7 +4,8 @@
         "class": [
             "flex",
             "justify-center",
-            "items-center"
+            "items-center",
+            "flex-col"
         ]
     }
 ]
