@@ -1,0 +1,10 @@
+[
+    {
+        "div": "${children}",
+        "class": [
+            "flex",
+            "justify-center",
+            "items-center"
+        ]
+    }
+]

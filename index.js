@@ -28,7 +28,6 @@ const loadComponent = async (componentRef, componentPath, currentPath) => {
         console.log("Invalid import path:", relativePath);
         return `<p>Invalid import path ${relativePath}</p>`;
     }
-    console.log(relativePath);
     const component = await readJsonFile(relativePath);
     let props = component.props ?? {};
     components[componentRef] = {
@@ -112,31 +111,35 @@ const parseShorthandTag = (json) => {
 
 const parseTag = (json) => {
     if (!json || json.lenght === 0) return "";
-    if (!json.tag) return parseShorthandTag(json);
-    let htmlTag = json["tag"];
-    if (components[htmlTag]) {
-        let component = components[htmlTag];
-        let html = component.html;
-        let props = component.props;
-        Object.keys(props).forEach(function (prop) {
-            if (reservedKeywords.includes(prop)) return;
-            let value = json[prop] ?? props[prop];
-            let regex = new RegExp('\\${' + prop + '}', "gm");
-            html = html.replaceAll(regex, value);
-        });
-
-        Object.keys(json).forEach(function (key) {
-            if (reservedKeywords.includes(key)) return;
-            if (!component.props[key]) {
-                console.log("Unknown prop", key);
-                return;
-            }
-        });
-        return html;
-    }
+    const isShortHand = !json.tag;
+    const htmlTag = isShortHand ? Object.keys(json)[0] : json["tag"];
     if (htmlTag === "style") {
         return `<style type="text/css">${parseStyle(json)}</style>`;
     } else {
+        if (components[htmlTag]) {
+            let component = components[htmlTag];
+            let html = component.html;
+            let props = component.props;
+            Object.keys(props).forEach(function (prop) {
+                if (reservedKeywords.includes(prop)) return;
+                let value = json[prop] ?? props[prop];
+                let regex = new RegExp('\\${' + prop + '}', "gm");
+                html = html.replaceAll(regex, value);
+            });
+            if (json.children) {
+                let htmlChildren = parseChildren(json.children);
+                let childRegex = new RegExp('\\${children}', "m");
+                html = html.replace(childRegex, htmlChildren);
+            }
+            Object.keys(json).forEach(function (key) {
+                if (reservedKeywords.includes(key)) return;
+                if (!component.props[key]) {
+                    console.log("Unknown prop", key);
+                    return;
+                }
+            });
+            return html;
+        }
         let htmlAttributes = parseAttributes(json);
         let htmlChildren =
             json["children"] ?
