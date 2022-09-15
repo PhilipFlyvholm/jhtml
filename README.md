@@ -4,6 +4,8 @@ Create a html website with the use of JSON instead of the XML format.
 
 *Disclaimer: This project is made for fun and is not intended to be used. Syntax is subject to change*
 
+TO BE UPDATED
+
 ## How to use
 Start by creating a json file and with an empty array. This is the equlivant of a empty html file with only the html tag.
 
