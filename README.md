@@ -7,45 +7,24 @@ Create a html website with the use of JSON instead of the XML format.
 TO BE UPDATED
 
 ## How to use
-Start by creating a json file and with an empty array. This is the equlivant of a empty html file with only the html tag.
+Three methods:
+- jsonToHtml(json, beautify=false);
+- jsonFileToHtml(inputPath, beautify=false);
+- jsonFileToHtmlFile(inputPath, outputPath, beautify=false);
 
-Each tag is represented by a two curly brackets. In its simplest form can a tag represented by a key-value pair where the key is the tag and the value is the either the raw content or a list of children.
-Alternativly can a "tag" key-value pair be giving to set the tag and a "children" key-value pair to give the children. This tag must have an array of tags as the value. If the tag does not need children but raw content then the "raw" key-value pair can be used.
 
-Giving a "raw" key-value pair will set the raw content in the tag.
-Using any other key in a tag will create an attribute.
-```json
-[
-	{
-		"tag": "head",
-		"children": [
-			{
-				"title": "This is the title."
-			},
-			{
-				"meta": "utf-8"
-			}
-		]
-	},
-	{
-		"tag": "body",
-		"children": [
-			{
-				"tag": "h1",
-				"raw": "Hello world!"
-			}
-		]
-	}
-]
-```
+Format:
+Main keywords:
+- Components
+  - Props
+  - Content
+---
+- Page
+- Component
+
 See the examples folder for up-to-date examples
 
 ## Todo:
-- Auto stylesheet creation
-- File-based router
-- Better error system
-- Reactive components/pages
-- For loops
-- Watch function should work for directory instead of the main file
-- Dev web server with auto reload
-- Maybe change components to be webcomponents
+- For / for each loops
+- Tests (mochajs)
+- Ready for v1.0.0

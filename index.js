@@ -191,7 +191,6 @@ class Parser {
                 await this.loadComponent(componentRef, this.json.components[componentRef]);
             }
         }
-        console.log(this.components);
         if (this.json.page) {
             const html = this.parseChildren(this.json.page);
             if (typeof children === "Error") {

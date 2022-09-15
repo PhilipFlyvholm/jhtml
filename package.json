@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "example": "node index.js parse --filePath examples/index.json",
-    "example-watch": "node index.js parse --filePath examples/index.json --watch"
+    "debug": "node index.js --debug"
   },
   "author": "Philip Flyvholm",
   "license": "GNU GPLv3",
