@@ -1,8 +1,31 @@
 {
-    "import": {
-        "text": "components/text.json",
-        "advancedText": "components/advanced-text.json",
-        "center": "components/center.json"
+    "components": {
+        "HelloWorld": [
+            {
+                "h1": "Hello world!"
+            }
+        ],
+        "advancedText": {
+            "props": {
+                "name": "World"
+            },
+            "content": [
+                {
+                    "p": "Hello ${name}"
+                }
+            ]
+        },
+        "center": [
+            {
+                "div": "${children}",
+                "class": [
+                    "flex",
+                    "justify-center",
+                    "items-center",
+                    "flex-col"
+                ]
+            }
+        ]
     },
     "page": [
         {
@@ -89,7 +112,12 @@
                         "br",
                         "text"
                     ],
-                    "class": ["box"] 
+                    "class": [
+                        "box"
+                    ]
+                },
+                {
+                    "tag": "HelloWorld"
                 },
                 {
                     "center": [

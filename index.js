@@ -1,13 +1,13 @@
 const fs = require('fs');
 const beautifyHtml = require('js-beautify').html;
 const isEmptyTag = require('./utils/emptyTags').isEmptyTag;
-const reservedKeywords = ["tag", "children", "raw"];
+const reservedKeywords = ["tag"];
 let shouldDebug = false;
-let components = {};
 
 const debug = (...args) => {
     if (shouldDebug) console.log("Debug:", ...args);
 };
+
 class Error {
     constructor(msg) {
         debug(msg);
@@ -50,31 +50,20 @@ const toHTMLFile = async (object, path) =>
 class Parser {
     constructor(json) {
         this.json = json;
-        this.components = [];
+        this.components = {};
     }
 
-    /*loadComponent = async (componentRef, componentPath, currentPath) => {
-        if (components[componentRef]) {
-            debug(`Component ${componentRef} already exists`);
-            return;
+    loadComponent = async (componentRef, componentJson) => {
+        if (this.components[componentRef]) {
+            return createErrorOutput(`Component ${componentRef} already exists`);
         }
-        if (typeof componentPath !== "string") {
-            debug("Invalid import path:", componentPath);
-            return `<p>Invalid import path ${componentPath}</p>`;
-        }
-        const folder = currentPath.substring(0, currentPath.lastIndexOf("/"));
-        const relativePath = `${folder}/${componentPath}`;
-        if (!fs.existsSync(relativePath)) {
-            debug("Invalid import path:", relativePath);
-            return `<p>Invalid import path ${relativePath}</p>`;
-        }
-        const component = await readJsonFile(relativePath);
-        let props = component.props ?? {};
-        components[componentRef] = {
+        let props = componentJson.props ?? {};
+        let content = componentJson.props ? componentJson.content : componentJson;
+        this.components[componentRef] = {
             props: props,
-            html: await parseJsonToHtml(component, relativePath)
+            html: await this.parseChildren(content)
         };
-    }*/
+    }
 
     parseAttributes = (tagJson, ignoreKeys = []) => {
         let htmlAttributes = "";
@@ -110,7 +99,7 @@ class Parser {
             if (type !== "string") {
                 return createErrorOutput(`Invalid data type: ${type}`);
             }
-            if (!components[tagJson]) return isEmptyTag(tagJson) ? `<${tagJson}/>` : `<${tagJson}></${tagJson}>`;
+            if (!this.components[tagJson]) return isEmptyTag(tagJson) ? `<${tagJson}/>` : `<${tagJson}></${tagJson}>`;
 
             let component = components[tagJson];
             let html = component.html;
@@ -139,13 +128,13 @@ class Parser {
                     htmlChildren = childrenJson;
                 }
             }
-            /*if (components[htmlTag]) {
-                let component = components[htmlTag];
+            if (this.components[htmlTag]) {
+                let component = this.components[htmlTag];
                 let html = component.html;
                 let props = component.props;
-                Object.keys(props).forEach(function (prop) {
+                Object.keys(props).forEach((prop) => {
                     if (reservedKeywords.includes(prop)) return;
-                    let value = json[prop] ?? props[prop];
+                    let value = tagJson[prop] ?? props[prop];
                     let regex = new RegExp('\\${' + prop + '}', "gm");
                     html = html.replaceAll(regex, value);
                 });
@@ -153,15 +142,14 @@ class Parser {
                     let childRegex = new RegExp('\\${children}', "m");
                     html = html.replace(childRegex, htmlChildren);
                 }
-                /*Object.keys(json).forEach(function (key) {
+                Object.keys(tagJson).forEach((key) => {
                     if (reservedKeywords.includes(key) || key == htmlTag) return;
                     if (!component.props[key]) {
-                        debug("Unknown prop", key);
-                        return;
+                        return createErrorOutput(`Unknown prop`);
                     }
                 });
                 return html;
-            }*/
+            }
             let htmlAttributes = this.parseAttributes(tagJson, isShortHand ? [htmlTag] : []);
             return htmlChildren ? `<${htmlTag}${htmlAttributes}>${htmlChildren}</${htmlTag}>` : isEmptyTag(htmlTag) ? `<${htmlTag}${htmlAttributes} />` : `<${htmlTag}${htmlAttributes}></${htmlTag}>`;
         }
@@ -198,11 +186,12 @@ class Parser {
         if (!this.json.page && !Array.isArray(this.json.page) && !this.json.component) {
             return createErrorOutput("Invalid json file - missing/invalid page/component tag");
         }
-        /*if (json.import) {
-            for (let componentRef of Object.keys(json.import)) {
-                await loadComponent(componentRef, json.import[componentRef], currentPath);
+        if (this.json.components) {
+            for (let componentRef of Object.keys(this.json.components)) {
+                await this.loadComponent(componentRef, this.json.components[componentRef]);
             }
-        }*/
+        }
+        console.log(this.components);
         if (this.json.page) {
             const html = this.parseChildren(this.json.page);
             if (typeof children === "Error") {
