@@ -199,7 +199,7 @@ class Parser {
             return { output: `<!doctype html><html>${html}</html>`, errors: null };
         }
         if (this.json.component) {
-            let children =  this.parseChildren(this.json.component);
+            let children = this.parseChildren(this.json.component);
             if (typeof children === "Error") {
                 return createErrorOutput(children.msg);
             }
@@ -230,6 +230,8 @@ const parseJson = async (json, beautify) => {
     return result;
 }
 
+module.exports.Error = Error;
+module.exports.Parser = Parser;
 
 /**
  * Converts a json object to html string
@@ -238,7 +240,7 @@ const parseJson = async (json, beautify) => {
  * @param {boolean} beautify - Default: false - The relative path to the html file generated
  * @return {{string, errors}} - Returns a object with the output and errors if any
  */
-exports.jsonToHtml = async (json, beautify = false) => {
+module.exports.jsonToHtml = async (json, beautify = false) => {
     return await parseJson(json, beautify);
 }
 /**
@@ -248,7 +250,7 @@ exports.jsonToHtml = async (json, beautify = false) => {
  * @param {boolean} beautify - Default: false - The relative path to the html file generated
  * @return {{string, errors}} - Returns a object with the output and errors if any
  */
-exports.jsonFileToHtml = async (inputPath, beautify = false) => {
+module.exports.jsonFileToHtml = async (inputPath, beautify = false) => {
     return readJsonFile(inputPath).then(
         (json) => {
             return parseJson(json, beautify);
@@ -264,13 +266,13 @@ exports.jsonFileToHtml = async (inputPath, beautify = false) => {
  * @param {boolean} beautify - Default: false - The relative path to the html file generated
  * @return {{string, errors}} - Returns a object with the output and errors if any
  */
-exports.jsonFileToHtmlFile = async (inputPath, outputPath, beautify = false) => {
+module.exports.jsonFileToHtmlFile = async (inputPath, outputPath, beautify = false) => {
     let html = await exports.jsonFileToHtml(inputPath, beautify);
     return await toHTMLFile(html, outputPath);
 }
-if(process.argv.slice(2).includes("--debug")){
+if (process.argv.slice(2).includes("--debug")) {
     shouldDebug = true;
-    exports.jsonToHtml([
+    module.exports.jsonToHtml([
         {
             "div": "${children}",
             "class": [
@@ -281,7 +283,7 @@ if(process.argv.slice(2).includes("--debug")){
             ]
         }
     ], true).then((r) => debug(r));
-    exports.jsonFileToHtml("./examples/index.json", true).then((r) => debug(r));
-    exports.jsonFileToHtml("I failed", true).then((r) => debug(r));
-    exports.jsonFileToHtmlFile("./examples/index.json", "./examples/index.html", true).then((r) => debug("file", r));
+    module.exports.jsonFileToHtml("./examples/index.json", true).then((r) => debug(r));
+    module.exports.jsonFileToHtml("I failed", true).then((r) => debug(r));
+    module.exports.jsonFileToHtmlFile("./examples/index.json", "./examples/index.html", true).then((r) => debug("file", r));
 }
