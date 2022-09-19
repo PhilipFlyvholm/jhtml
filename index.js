@@ -1,7 +1,7 @@
 const fs = require('fs');
 const beautifyHtml = require('js-beautify').html;
 const isEmptyTag = require('./utils/emptyTags').isEmptyTag;
-const reservedKeywords = ["tag"];
+const reservedKeywords = ["tag", "@each", "children"];
 let shouldDebug = false;
 
 const debug = (...args) => {
@@ -92,6 +92,15 @@ class Parser {
         return css;
     }
 
+    parseEach = (tagJson, htmlChildren) => {
+        let items = tagJson.items ?? [];
+        let html = "";
+        items.forEach(item => {
+            html += htmlChildren.replaceAll("${item}", item);
+        });
+        return html;
+    }
+
     parseTag = (tagJson) => {
         if (!tagJson || tagJson.lenght === 0) return "";
         const type = typeof tagJson;
@@ -128,7 +137,10 @@ class Parser {
                     htmlChildren = childrenJson;
                 }
             }
-            if (this.components[htmlTag]) {
+            if (htmlTag === "@each") {
+                return this.parseEach(tagJson, htmlChildren);
+            }
+            else if (this.components[htmlTag]) {
                 let component = this.components[htmlTag];
                 let html = component.html;
                 let props = component.props;
@@ -271,7 +283,7 @@ module.exports.jsonFileToHtmlFile = async (inputPath, outputPath, beautify = fal
 }
 if (process.argv.slice(2).includes("--debug")) {
     shouldDebug = true;
-    module.exports.jsonToHtml([
+    /*module.exports.jsonToHtml([
         {
             "div": "${children}",
             "class": [
@@ -281,8 +293,17 @@ if (process.argv.slice(2).includes("--debug")) {
                 "flex-col"
             ]
         }
-    ], true).then((r) => debug(r));
-    module.exports.jsonFileToHtml("./examples/index.json", true).then((r) => debug(r));
-    module.exports.jsonFileToHtml("I failed", true).then((r) => debug(r));
+    ], true).then((r) => debug(r));*/
+    //module.exports.jsonFileToHtml("./examples/index.json", true).then((r) => debug(r));
+    //module.exports.jsonFileToHtml("I failed", true).then((r) => debug(r));
     module.exports.jsonFileToHtmlFile("./examples/index.json", "./examples/index.html", true).then((r) => debug("file", r));
+
+    module.exports.jsonToHtml([
+        {
+            "@each": "${item}",
+            "items": [
+                "bing",
+                "bong"
+            ]
+        }], true).then((r) => debug(r));
 }

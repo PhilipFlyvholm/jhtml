@@ -122,8 +122,16 @@
                 {
                     "center": [
                         {
-                            "tag": "advancedText",
-                            "name": "this is another component within a component with props"
+                            "@each": [
+                                {
+                                    "tag": "advancedText",
+                                    "name": "${item}: this is another component within a component with props"
+                                }
+                            ],
+                            "items": [
+                                "bing",
+                                "bong"
+                            ]
                         },
                         "br",
                         {
