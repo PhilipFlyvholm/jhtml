@@ -224,7 +224,6 @@ const parseJson = async (json, beautify) => {
         }
     }
     const parser = new Parser(json);
-    console.log(parser);
     const result = await parser.parse();
     if (beautify && !result.errors) result.output = beautifyHtml(result.output);
     return result;

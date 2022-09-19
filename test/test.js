@@ -13,6 +13,5 @@ describe('Parser', function () {
         it('should return a object', function () {
             assert.equal(typeof (new jthml.Parser()).parse("hello"), "object");
         });
-        
     });
 });
